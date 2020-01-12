@@ -18,7 +18,7 @@ python main.py
 -   `PyQt5`.
 -   `moviepy`.
 -   [ImageMagic](https://imagemagick.org/script/download.php).
-    -   Windows: Set `IMAGEMAGICK_BINARY = "C:\Program Files\ImageMagick-*VERSION*\magick.exe" ` as an environment variable (default installation folder).
+    -   Windows: Set `IMAGEMAGICK_BINARY = "C:\Program Files\ImageMagick-*VERSION*\magick.exe"` as an environment variable (default installation folder).
 
 ## License
 
