@@ -73,14 +73,20 @@ class VideoWindow(QMainWindow):
         self.layout_button.setContentsMargins(0, 0, 0, 0)
         self.button_start = QPushButton('Start')
         self.button_end = QPushButton('End')
-        self.button_finish = QPushButton('Finish')
+        self.button_subclip_video = QPushButton('Subclip (Video)')
+        self.button_subclip_audio = QPushButton('Subclip (Audio)')
+        self.button_clear = QPushButton('Clear')
         self.layout_button.addWidget(self.button_start)
         self.layout_button.addWidget(self.button_end)
-        self.layout_button.addWidget(self.button_finish)
+        self.layout_button.addWidget(self.button_subclip_video)
+        self.layout_button.addWidget(self.button_subclip_audio)
+        self.layout_button.addWidget(self.button_clear)
 
         self.button_start.clicked.connect(self.record_start)
         self.button_end.clicked.connect(self.record_end)
-        self.button_finish.clicked.connect(self.record_finish)
+        self.button_subclip_video.clicked.connect(self.record_subclip_video)
+        self.button_subclip_audio.clicked.connect(self.record_subclip_audio)
+        self.button_clear.clicked.connect(self.record_clear)
 
         # Widget layout.
         self.layout_widget = QHBoxLayout()
@@ -265,7 +271,7 @@ class VideoWindow(QMainWindow):
         self.statusbar.showMessage(
                 "Info: Starting time: ({}), and Ending time: ({}).".format(self.record_start_time, self.record_end_time))
 
-    def record_finish(self):
+    def _check_duration(self):
         if self.video_name == "":
             self.statusbar.showMessage(
                 "Error: Please open a video first.")
@@ -275,17 +281,40 @@ class VideoWindow(QMainWindow):
         elif not self.record_start_time:
             self.statusbar.showMessage(
                 "Error: Please choose the starting time.")
-        elif not self.record_end_time:
+        elif not self.record_end_time or self.record_end_time == 0:
             self.statusbar.showMessage(
                 "Error: Please choose the ending time.")
         else:
+            return True
+
+        return False
+
+    def record_subclip_video(self):
+        if self._check_duration():
             # self.video_player.pause()
             self.statusbar.showMessage(
                 "Info: Please wait until the process ends.")
             self.thread = Thread()
-            self.thread.set_params(self.video_name, self.record_start_time / 1000, self.record_end_time / 1000)
+            self.thread.set_params(Thread.MSG_CUT_VIDEO, self.video_name, self.record_start_time / 1000, self.record_end_time / 1000)
             self.thread.signal_return_value.connect(self.thread_done)
             self.thread.start()
+    
+    def record_subclip_audio(self):
+        if self._check_duration():
+            # self.video_player.pause()
+            self.statusbar.showMessage(
+                "Info: Please wait until the process ends.")
+            self.thread = Thread()
+            self.thread.set_params(Thread.MSG_EXTRACT_AUDIO, self.video_name, self.record_start_time / 1000, self.record_end_time / 1000)
+            self.thread.signal_return_value.connect(self.thread_done)
+            self.thread.start()
+
+    def record_clear(self):
+        self.record_start_time = 0
+        self.record_end_time = 0
+
+        self.statusbar.showMessage(
+                "Info: Starting time: ({}), and Ending time: ({}).".format(self.record_start_time, self.record_end_time))
 
     def thread_done(self, return_value, video_name):
         if return_value:
