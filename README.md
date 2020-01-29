@@ -1,4 +1,4 @@
-# video-cutter
+# video-editor
 
 Video cutter based on `Python3` and `PyQt5`.
 
