@@ -8,9 +8,9 @@ from PyQt5.QtCore import QDir, Qt, QUrl
 from PyQt5.QtGui import QIcon
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
-from PyQt5.QtWidgets import (QAction, QFileDialog, QHBoxLayout, QMainWindow, 
-                             QPushButton, QShortcut, QSlider, QStyle, 
-                             QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (QAction, QComboBox, QFileDialog, QHBoxLayout, 
+                             QLabel, QMainWindow, QPushButton, QShortcut,  
+                             QSlider, QStyle, QVBoxLayout, QWidget)
 import sys
 from src.thread import Thread
 
@@ -69,18 +69,27 @@ class VideoWindow(QMainWindow):
         self.widget_window = QWidget(self)
         self.setCentralWidget(self.widget_window)
 
-        self.layout_button = QHBoxLayout()
-        self.layout_button.setContentsMargins(0, 0, 0, 0)
-        self.button_start = QPushButton('Start')
-        self.button_end = QPushButton('End')
+        self.layout_operation = QHBoxLayout()
+        self.layout_operation.setContentsMargins(0, 0, 0, 0)
+        self.label_rotate = QLabel('Degree of rotation')
+        self.combobox_degree = QComboBox()
+        degrees = ['0', '90', '180', '270']
+        self.combobox_degree.addItems(degrees)
         self.button_subclip_video = QPushButton('Subclip (Video)')
         self.button_subclip_audio = QPushButton('Subclip (Audio)')
+        self.layout_operation.addWidget(self.label_rotate)
+        self.layout_operation.addWidget(self.combobox_degree)
+        self.layout_operation.addWidget(self.button_subclip_video)
+        self.layout_operation.addWidget(self.button_subclip_audio)
+
+        self.layout_record = QHBoxLayout()
+        self.layout_record.setContentsMargins(0, 0, 0, 0)
+        self.button_start = QPushButton('Start')
+        self.button_end = QPushButton('End')
         self.button_clear = QPushButton('Clear')
-        self.layout_button.addWidget(self.button_start)
-        self.layout_button.addWidget(self.button_end)
-        self.layout_button.addWidget(self.button_subclip_video)
-        self.layout_button.addWidget(self.button_subclip_audio)
-        self.layout_button.addWidget(self.button_clear)
+        self.layout_record.addWidget(self.button_start)
+        self.layout_record.addWidget(self.button_end)
+        self.layout_record.addWidget(self.button_clear)
 
         self.button_start.clicked.connect(self.record_start)
         self.button_end.clicked.connect(self.record_end)
@@ -96,7 +105,8 @@ class VideoWindow(QMainWindow):
 
         self.layout_window = QVBoxLayout()
         self.layout_window.addWidget(self.widget_video)
-        self.layout_window.addLayout(self.layout_button)
+        self.layout_window.addLayout(self.layout_record)
+        self.layout_window.addLayout(self.layout_operation)
         self.layout_window.addLayout(self.layout_widget)
 
         # Window layout.
@@ -241,8 +251,8 @@ class VideoWindow(QMainWindow):
         
         self.video_slider.setRange(0, duration)
         self.video_duration = duration
-        self.record_start_time = None
-        self.record_end_time = None
+        self.record_start_time = 0
+        self.record_end_time = 0
 
     def set_position(self, position):
         """ Slot function:
@@ -263,27 +273,32 @@ class VideoWindow(QMainWindow):
 
     def record_start(self):
         self.record_start_time = self.video_slider.sliderPosition()
-        self.statusbar.showMessage(
-                "Info: Starting time: ({}), and Ending time: ({}).".format(self.record_start_time, self.record_end_time))
+        if self.record_start_time > self.record_end_time:
+            self.record_start_time, self.record_end_time = self.record_end_time, self.record_start_time
+
+        if self.record_start_time is not None:
+            self._show_record_time()
 
     def record_end(self):
         self.record_end_time = self.video_slider.sliderPosition()
+        if self.record_start_time > self.record_end_time:
+            self.record_start_time, self.record_end_time = self.record_end_time, self.record_start_time
+
+        if self.record_end_time is not None:
+            self._show_record_time()
+
+    def _show_record_time(self):
         self.statusbar.showMessage(
-                "Info: Starting time: ({}), and Ending time: ({}).".format(self.record_start_time, self.record_end_time))
+            "Info: Starting time: ({}), and Ending time: ({}) (Duration: {}).".format(
+            self.record_start_time / 1000, self.record_end_time / 1000, self.video_duration / 1000))
 
     def _check_duration(self):
         if self.video_name == "":
             self.statusbar.showMessage(
                 "Error: Please open a video first.")
-        elif not self.record_start_time and not self.record_end_time: 
+        elif self.record_start_time == self.record_end_time: 
             self.statusbar.showMessage(
-                "Error: Please choose the starting and ending time.")
-        elif not self.record_start_time:
-            self.statusbar.showMessage(
-                "Error: Please choose the starting time.")
-        elif not self.record_end_time or self.record_end_time == 0:
-            self.statusbar.showMessage(
-                "Error: Please choose the ending time.")
+                "Error: Duration can NOT be 0.")
         else:
             return True
 
@@ -295,7 +310,8 @@ class VideoWindow(QMainWindow):
             self.statusbar.showMessage(
                 "Info: Please wait until the process ends.")
             self.thread = Thread()
-            self.thread.set_params(Thread.MSG_CUT_VIDEO, self.video_name, self.record_start_time / 1000, self.record_end_time / 1000)
+            self.thread.set_params(Thread.MSG_CUT_VIDEO, self.video_name, 
+                self.record_start_time / 1000, self.record_end_time / 1000, self.combobox_degree.currentText())
             self.thread.signal_return_value.connect(self.thread_done)
             self.thread.start()
     
@@ -305,7 +321,8 @@ class VideoWindow(QMainWindow):
             self.statusbar.showMessage(
                 "Info: Please wait until the process ends.")
             self.thread = Thread()
-            self.thread.set_params(Thread.MSG_EXTRACT_AUDIO, self.video_name, self.record_start_time / 1000, self.record_end_time / 1000)
+            self.thread.set_params(Thread.MSG_EXTRACT_AUDIO, self.video_name, 
+                self.record_start_time / 1000, self.record_end_time / 1000)
             self.thread.signal_return_value.connect(self.thread_done)
             self.thread.start()
 
