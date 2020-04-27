@@ -273,24 +273,23 @@ class VideoWindow(QMainWindow):
 
     def record_start(self):
         self.record_start_time = self.video_slider.sliderPosition()
-        if self.record_start_time > self.record_end_time:
+        if self.record_end_time is not None and self.record_start_time > self.record_end_time:
             self.record_start_time, self.record_end_time = self.record_end_time, self.record_start_time
 
-        if self.record_start_time is not None:
-            self._show_record_time()
+        self._show_record_time()
 
     def record_end(self):
         self.record_end_time = self.video_slider.sliderPosition()
-        if self.record_start_time > self.record_end_time:
+        if self.record_start_time is not None and self.record_start_time > self.record_end_time:
             self.record_start_time, self.record_end_time = self.record_end_time, self.record_start_time
 
-        if self.record_end_time is not None:
-            self._show_record_time()
+        self._show_record_time()
 
     def _show_record_time(self):
-        self.statusbar.showMessage(
-            "Info: Starting time: ({}), and Ending time: ({}) (Duration: {}).".format(
-            self.record_start_time / 1000, self.record_end_time / 1000, self.video_duration / 1000))
+        if self.record_start_time is not None and self.record_end_time is not None:
+            self.statusbar.showMessage(
+                "Info: Starting time: ({}), and Ending time: ({}) (Duration: {}).".format(
+                self.record_start_time / 1000, self.record_end_time / 1000, self.video_duration / 1000))
 
     def _check_duration(self):
         if self.video_name == "":
