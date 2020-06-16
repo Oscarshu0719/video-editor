@@ -273,7 +273,7 @@ class VideoWindow(QMainWindow):
 
     def record_start(self):
         self.record_start_time = self.video_slider.sliderPosition()
-        if self.record_end_time is not None and self.record_start_time > self.record_end_time:
+        if self.record_end_time is not None and self.record_end_time != 0 and self.record_start_time > self.record_end_time:
             self.record_start_time, self.record_end_time = self.record_end_time, self.record_start_time
 
         self._show_record_time()
@@ -298,6 +298,9 @@ class VideoWindow(QMainWindow):
         elif self.record_start_time == self.record_end_time: 
             self.statusbar.showMessage(
                 "Error: Duration can NOT be 0.")
+        elif self.record_start_time > self.record_end_time: 
+            self.statusbar.showMessage(
+                "Error: The start time should be earlier than the end time.")
         else:
             return True
 
