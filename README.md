@@ -17,8 +17,17 @@ python main.py
 
 -   `PyQt5`.
 -   `moviepy`.
--   [ImageMagic](https://imagemagick.org/script/download.php).
-    -   Windows: Set `IMAGEMAGICK_BINARY = "C:\Program Files\ImageMagick-*VERSION*\magick.exe"` as an environment variable (default installation folder).
+-   ImageMagick
+    -   Windows: Download and install [ImageMagick](https://imagemagick.org/script/download.php).
+    And set `IMAGEMAGICK_BINARY = "C:\Program Files\ImageMagick-*VERSION*\magick.exe"` as an environment variable (default installation folder).
+    -   Ubuntu: See [ImageMagick - Community Help Wiki](https://help.ubuntu.com/community/ImageMagick).
+    ``` 
+    sudo apt-get update
+    sudo apt-get install imagemagick --fix-missing
+    ```
+> Notice: (Ubuntu environment)
+> 
+> Change `'-i', '-', '-an'` to `'-an', '-i', '-'` in list type variable `cmd` in `/home/*USER*/anaconda3/envs/*ENV*/lib/python3.7/site-packages/moviepy/video/io/ffmpeg_writer.py`. (Probably in line `87`)
 
 ## License
 
