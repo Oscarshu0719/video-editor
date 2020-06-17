@@ -152,10 +152,12 @@ class VideoWindow(QMainWindow):
         Note: This function still can't not accurately move the slider to the 
         clicked position.
         """
-        
-        position = self.video_slider.minimum() + self.video_duration * (event.pos().x() - 47) / (self.video_slider.width() - 11)
-        if position != self.video_slider.sliderPosition():
-            self.set_position(position)
+
+        slider_start_pos = 51
+        if 42 <= self.height() - event.pos().y() <= 62:
+            position = slider_start_pos + self.video_slider.minimum() + (event.pos().x() - slider_start_pos) / self.video_slider.width() * self.video_duration
+            if position != self.video_slider.sliderPosition():
+                self.set_position(position)
         
 #    def keyPressEvent(self, event):
 #        if event.key() == Qt.Key_A:
