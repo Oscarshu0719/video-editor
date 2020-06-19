@@ -118,17 +118,19 @@ class VideoWindow(QMainWindow):
         self.video_player.durationChanged.connect(self.duration_changed)
         self.video_player.error.connect(self.error_control)
         
-#        QShortcut(Qt.Key_Up, self, self.arrow_up)
-#        QShortcut(Qt.Key_Down, self, self.arrow_down)
+        QShortcut(Qt.Key_Up, self, self.arrow_up)
+        QShortcut(Qt.Key_Down, self, self.arrow_down)
         QShortcut(Qt.Key_Left, self, self.arrow_left_event)
         QShortcut(Qt.Key_Right, self, self.arrow_right_event)
         QShortcut(Qt.Key_Space, self, self.play_video)
         
-#    def arrow_up(self):
-#        print("up")
-#
-#    def arrow_down(self):
-#        print("down")
+    def arrow_up(self):
+        if self.video_player.state() != QMediaPlayer.StoppedState:
+            self.video_player.setVolume(min(self.video_player.volume() + 10, 100))
+
+    def arrow_down(self):
+        if self.video_player.state() != QMediaPlayer.StoppedState:
+            self.video_player.setVolume(max(self.video_player.volume() - 10, 0))
     
     def arrow_left_event(self):
         """ Slot function:
@@ -159,21 +161,6 @@ class VideoWindow(QMainWindow):
             if position != self.video_slider.sliderPosition():
                 self.set_position(position)
         
-#    def keyPressEvent(self, event):
-#        if event.key() == Qt.Key_A:
-#            print(self.video_slider.value())
-#        elif event.key() == Qt.Key_D:
-#            print(self.video_slider.value())
-            
-    def closeEvent(self, event):
-        """ Slot function:
-        After clicking the 'close' button, pause the video.
-        """
-
-        self.video_player.pause()
-        self.hide()
-#        self.setVisible(False)
-        
     def open_video(self):
         """ Slot function:
         Open a video from the file system.
@@ -186,7 +173,6 @@ class VideoWindow(QMainWindow):
         if video_name != '':
             self.video_player.setMedia(
                     QMediaContent(QUrl.fromLocalFile(video_name)))
-#            self.setVisible(True)
             self.button_play.setEnabled(True)
             self.video_player.play()
         
@@ -194,23 +180,6 @@ class VideoWindow(QMainWindow):
             self.statusbar.showMessage(
                     "Info: Playing the video '" + video_name[(index + 1):] 
                     + "' ...")
-            
-    def double_clicked_play_video(self, video_name):
-        """ Function:
-        After double clicking, start playing the clicked video.
-        """
-        
-        self.video_player.setMedia(
-                QMediaContent(QUrl.fromLocalFile(video_name)))
-        self.show()
-        self.button_play.setEnabled(True)
-        self.video_player.play()
-        
-        index = video_name.rfind('/')
-        print(video_name)
-        self.statusbar.showMessage(
-                "Info: Playing the video '" + video_name[(index + 1):] 
-                + "' ...")
 
     def play_video(self):
         """ Slot function:
@@ -310,7 +279,6 @@ class VideoWindow(QMainWindow):
 
     def record_subclip_video(self):
         if self._check_duration():
-            # self.video_player.pause()
             self.statusbar.showMessage(
                 "Info: Please wait until the process ends.")
             self.thread = Thread()
@@ -321,7 +289,6 @@ class VideoWindow(QMainWindow):
     
     def record_subclip_audio(self):
         if self._check_duration():
-            # self.video_player.pause()
             self.statusbar.showMessage(
                 "Info: Please wait until the process ends.")
             self.thread = Thread()
