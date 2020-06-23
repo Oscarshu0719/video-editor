@@ -155,9 +155,9 @@ class VideoWindow(QMainWindow):
         clicked position.
         """
 
-        slider_start_pos = 51
+        slider_start_pos = self.video_slider.geometry().topLeft().x()
         if 42 <= self.height() - event.pos().y() <= 62:
-            position = slider_start_pos + self.video_slider.minimum() + (event.pos().x() - slider_start_pos) / self.video_slider.width() * self.video_duration
+            position = self.video_slider.minimum() + (event.pos().x() - slider_start_pos) / self.video_slider.width() * self.video_duration
             if position != self.video_slider.sliderPosition():
                 self.set_position(position)
         
