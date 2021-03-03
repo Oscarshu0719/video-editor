@@ -71,7 +71,7 @@ class VideoWindow(QMainWindow):
 
         self.layout_operation = QHBoxLayout()
         self.layout_operation.setContentsMargins(0, 0, 0, 0)
-        self.label_rotate = QLabel('Degree of rotation')
+        self.label_rotate = QLabel('Degree of rotation (counterclockwise)')
         self.combobox_degree = QComboBox()
         degrees = ['0', '90', '180', '270']
         self.combobox_degree.addItems(degrees)
@@ -170,16 +170,30 @@ class VideoWindow(QMainWindow):
                 QDir.homePath())
         self.video_name = video_name
 
-        if video_name != '':
+        if self.video_name != '':
+            if self.video_name[-4: ] == '.flv':
+                self.statusbar.showMessage(self.video_name[-4: ])
+                self.video_name = self.flv2mp4(self.video_name, self.video_name[: -4] + '.mp4')
+
             self.video_player.setMedia(
-                    QMediaContent(QUrl.fromLocalFile(video_name)))
+                    QMediaContent(QUrl.fromLocalFile(self.video_name)))
             self.button_play.setEnabled(True)
             self.video_player.play()
         
-            index = video_name.rfind('/')
+            index = self.video_name.rfind('/')
             self.statusbar.showMessage(
-                    "Info: Playing the video '" + video_name[(index + 1):] 
+                    "Info: Playing the video '" + self.video_name[(index + 1):] 
                     + "' ...")
+
+    def flv2mp4(self, video_name, output_name='tmp.mp4'):
+        import subprocess
+        command = [
+            'ffmpeg', '-y', '-i', video_name, '-c', 'copy', '-copyts', output_name
+        ]
+        ffmpeg = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        ffmpeg.communicate()
+    
+        return output_name
 
     def play_video(self):
         """ Slot function:
