@@ -35,3 +35,7 @@ class Thread(QThread):
             subclip_name = extract_audio(self.video_name, self.start_time, self.end_time)
 
         self.signal_return_value.emit(1, subclip_name)
+
+    def stop(self):
+        self.terminate()
+        
